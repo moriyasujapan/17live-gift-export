@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>17.live ギフト履歴 Excel エクスポート</title>
+  <meta name="description" content="17.live の受信ギフト履歴を全件取得して Excel ファイルとしてダウンロードする Bookmarklet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html {
+      -webkit-text-size-adjust: 100%
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", sans-serif;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 20px 16px 80px;
+      color: #222;
+      line-height: 1.7;
+      background: #fafafa;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: .4em;
+      line-height: 1.4
+    }
+
+    h2 {
+      font-size: 1.1rem;
+      margin: 2em 0 .6em;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #ff5722;
+      color: #333
+    }
+
+    h3 {
+      font-size: 1rem;
+      margin: 1.4em 0 .4em;
+      color: #555
+    }
+
+    p {
+      margin: .6em 0
+    }
+
+    ol,
+    ul {
+      padding-left: 1.4em;
+      margin: .6em 0
+    }
+
+    ol li,
+    ul li {
+      margin-bottom: .6em
+    }
+
+    code {
+      background: #eee;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: .88em;
+      font-family: Menlo, Consolas, monospace
+    }
+
+    .btn {
+      display: inline-block;
+      background: #ff5722;
+      color: #fff;
+      padding: 14px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1.05rem;
+      margin: 10px 0;
+      box-shadow: 0 2px 8px rgba(255, 87, 34, 0.25);
+    }
+
+    .btn:active {
+      opacity: .8;
+      transform: translateY(1px)
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-top: 1.5em;
+      border-bottom: 1px solid #ddd
+    }
+
+    .tabs button {
+      flex: 1;
+      padding: 12px 4px;
+      background: #f0f0f0;
+      border: none;
+      cursor: pointer;
+      font-size: .95rem;
+      border-bottom: 3px solid transparent;
+      font-family: inherit;
+      color: #555;
+    }
+
+    .tabs button.active {
+      background: #fff;
+      border-bottom-color: #ff5722;
+      font-weight: bold;
+      color: #222
+    }
+
+    .panel {
+      display: none;
+      padding: 16px 4px;
+      background: #fff;
+      border-radius: 0 0 6px 6px
+    }
+
+    .panel.active {
+      display: block
+    }
+
+    .copy-btn {
+      background: #333;
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: .95rem;
+      margin-top: 8px;
+      font-family: inherit;
+    }
+
+    .copy-btn:active {
+      background: #555
+    }
+
+    .ok {
+      color: #0a7d2f;
+      font-weight: bold;
+      margin-left: 10px;
+      font-size: .9rem
+    }
+
+    .warn {
+      background: #fff8e1;
+      border-left: 4px solid #ffa000;
+      padding: 10px 14px;
+      border-radius: 4px;
+      margin: 1em 0;
+      font-size: .92rem;
+    }
+
+    .info {
+      background: #e3f2fd;
+      border-left: 4px solid #1976d2;
+      padding: 10px 14px;
+      border-radius: 4px;
+      margin: 1em 0;
+      font-size: .92rem;
+    }
+
+    details {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin: 1em 0;
+    }
+
+    details summary {
+      cursor: pointer;
+      font-weight: bold;
+      color: #555
+    }
+
+    details[open] summary {
+      margin-bottom: 10px
+    }
+
+    pre {
+      background: #1a1a1a;
+      color: #e0e0e0;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: .7rem;
+      overflow-x: auto;
+      max-height: 200px;
+      font-family: Menlo, Consolas, monospace;
+      line-height: 1.4;
+      word-break: break-all;
+      white-space: pre-wrap;
+    }
+
+    footer {
+      margin-top: 3em;
+      padding-top: 1.5em;
+      border-top: 1px solid #ddd;
+      font-size: .85rem;
+      color: #888;
+      text-align: center
+    }
+
+    .step {
+      background: #fff;
+      border-left: 3px solid #ff5722;
+      padding: 8px 14px;
+      margin: .5em 0;
+      border-radius: 0 4px 4px 0;
+    }
+
+    .step b {
+      color: #ff5722
+    }
+
+    kbd {
+      background: #f4f4f4;
+      border: 1px solid #ccc;
+      border-bottom-width: 2px;
+      border-radius: 3px;
+      padding: 1px 6px;
+      font-size: .85em;
+      font-family: inherit;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>📥 17.live ギフト履歴 Excel エクスポート</h1>
+  <p>17.live にログイン中のアカウントの<strong>受信ギフト履歴を全件取得</strong>し、<br>
+    集計付きの Excel ファイル(.xlsx)としてダウンロードする Bookmarklet です。</p>
+
+  <div class="info">
+    ✨ 4つのシート(サマリ / 贈り主ランキング / ギフトランキング / 全履歴)を含む Excel を自動生成します。
+  </div>
+
+  <h2>📌 インストール方法</h2>
+
+  <div class="tabs">
+    <button class="tab active" data-target="pc" onclick="showTab('pc',this)">💻 PC</button>
+    <button class="tab" data-target="ios" onclick="showTab('ios',this)">📱 iOS</button>
+    <button class="tab" data-target="android" onclick="showTab('android',this)">🤖 Android</button>
+  </div>
+
+  <!-- PC -->
+  <div id="panel-pc" class="panel active">
+    <p>下のオレンジボタンを <strong>ブックマークバーにドラッグ</strong> してください。</p>
+    <a id="dragBtn" class="btn" href="#" onclick="return false;">📥 17.live Gift Export</a>
+
+    <h3>使い方</h3>
+    <div class="step"><b>1.</b> 17.live にログインした状態で任意のページを開く</div>
+    <div class="step"><b>2.</b> ブックマークバーの「17.live Gift Export」をクリック</div>
+    <div class="step"><b>3.</b> 自動で全件取得 → Excel ファイルがダウンロードされる</div>
+  </div>
+
+  <!-- iOS -->
+  <div id="panel-ios" class="panel">
+    <div class="warn">iOS Safari では Bookmarklet を直接ドラッグできないため、少し手順が必要です。</div>
+
+    <h3>インストール手順</h3>
+    <div class="step">
+      <b>1.</b> 下のボタンでコードをコピー<br>
+      <button class="copy-btn" onclick="doCopy(this)">📋 コードをコピー</button>
+    </div>
+    <div class="step"><b>2.</b> Safari 下部の <kbd>共有</kbd> → <kbd>ブックマークを追加</kbd> をタップ(タイトルは「Gift Export」など)</div>
+    <div class="step"><b>3.</b> Safari 下部の📖アイコン → 右下の <kbd>編集</kbd> をタップ</div>
+    <div class="step"><b>4.</b> 追加したブックマークをタップ → <strong>URL 欄をすべて削除</strong></div>
+    <div class="step"><b>5.</b> URL 欄に <strong>コピーしたコードを貼り付け</strong> → <kbd>完了</kbd></div>
+
+    <h3>使い方</h3>
+    <div class="step"><b>1.</b> Safari で 17.live にログイン</div>
+    <div class="step"><b>2.</b> 📖 → ブックマークから「Gift Export」をタップ</div>
+    <div class="step"><b>3.</b> Files アプリの「ダウンロード」に xlsx ファイルが保存される</div>
+
+    <div class="warn">⚠️ Files アプリ → ダウンロードフォルダから Numbers / Excel で開けます。</div>
+  </div>
+
+  <!-- Android -->
+  <div id="panel-android" class="panel">
+    <div class="warn">Android Chrome ではブックマークバーから直接タップで起動できないため、アドレスバー経由で呼び出します。</div>
+
+    <h3>インストール手順</h3>
+    <div class="step">
+      <b>1.</b> 下のボタンでコードをコピー<br>
+      <button class="copy-btn" onclick="doCopy(this)">📋 コードをコピー</button>
+    </div>
+    <div class="step"><b>2.</b> このページを ☆ でブックマーク登録</div>
+    <div class="step"><b>3.</b> Chrome のメニュー → ブックマーク → 追加したものを編集</div>
+    <div class="step"><b>4.</b> 名前を「Gift Export」に、URL欄をすべて消してコピーしたコードを貼り付け</div>
+
+    <h3>使い方</h3>
+    <div class="step"><b>1.</b> 17.live にログイン</div>
+    <div class="step"><b>2.</b> アドレスバーに <code>gift export</code> と入力</div>
+    <div class="step"><b>3.</b> 候補に出てくる「Gift Export」をタップ</div>
+  </div>
+
+  <h2>📋 Bookmarklet コード</h2>
+  <p>iOS / Android で手動登録する場合はこのコードをコピーして使ってください。</p>
+  <button class="copy-btn" onclick="doCopy(this)">📋 コードをコピー</button>
+  <details>
+    <summary>コードを表示する</summary>
+    <pre id="src"></pre>
+  </details>
+
+  <h2>🛡️ 仕様・注意事項</h2>
+  <ul>
+    <li>17.live にログイン中のアカウントの履歴を取得します</li>
+    <li>取得した認証情報は外部に送信されません(すべてブラウザ内で完結)</li>
+    <li>処理中はページを閉じないでください</li>
+    <li>件数が多いと数十秒〜数分かかる場合があります</li>
+    <li>Excel ライブラリ(SheetJS)を CDN から読み込みます</li>
+  </ul>
+
+  <h2>📊 出力される Excel の構成</h2>
+  <ul>
+    <li><strong>サマリ</strong>:総件数、総ポイント、贈り主数、最古/最新の日時など</li>
+    <li><strong>贈り主ランキング</strong>:userID 単位の集計(合計ポイント降順)</li>
+    <li><strong>ギフトランキング</strong>:ギフト種類別の集計</li>
+    <li><strong>全履歴</strong>:全件の詳細(日時/贈り主/ギフト/ポイント)</li>
+  </ul>
+
+  <footer>
+    個人利用を目的としたツールです。<br>
+    <span id="version">v1.0</span>
+  </footer>
+
+  <script>
+    // ============================================================
+    // 設定: 難読化済みスクリプトの配置先 URL を書き換えてください
+    // 例: https://YOUR-USER.github.io/REPO-NAME/bookmarklet.js
+    // jsDelivr 経由(推奨): https://cdn.jsdelivr.net/gh/USER/REPO@main/bookmarklet.js
+    // ============================================================
+    const SCRIPT_URL = 'https://cdn.jsdelivr.net/gh/moriyasujapan/17live-gift-export@main/bookmarklet.js';
+
+    // Bookmarklet 本体: 外部スクリプトを fetch して eval するローダー
+    const BOOKMARKLET = "javascript:(function(){fetch('" + SCRIPT_URL + "').then(function(r){return r.text();}).then(function(t){var s=document.createElement('script');s.textContent=t;document.documentElement.appendChild(s);s.remove();}).catch(function(e){alert('読み込み失敗: '+e.message);});})();";
+
+    // ボタンと code 表示にセット
+    document.getElementById('dragBtn').href = BOOKMARKLET;
+    document.getElementById('src').textContent = BOOKMARKLET;
+
+    // タブ切り替え
+    function showTab(name, btn) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+      document.getElementById('panel-' + name).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    // コピー
+    function doCopy(btn) {
+      const text = BOOKMARKLET;
+      const showOK = () => {
+        const old = btn.parentNode.querySelector('.ok');
+        if (old) old.remove();
+        const span = document.createElement('span');
+        span.className = 'ok';
+        span.textContent = '✓ コピーしました';
+        btn.parentNode.appendChild(span);
+        setTimeout(() => span.remove(), 2500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(showOK).catch(fallback);
+      } else {
+        fallback();
+      }
+      function fallback() {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        try { document.execCommand('copy'); showOK(); }
+        catch (e) { alert('コピーに失敗しました。手動でコピーしてください。'); }
+        ta.remove();
+      }
+    }
+  </script>
+
+</body>
+
+</html>
