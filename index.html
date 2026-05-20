@@ -337,7 +337,7 @@
     // 例: https://YOUR-USER.github.io/REPO-NAME/bookmarklet.js
     // jsDelivr 経由(推奨): https://cdn.jsdelivr.net/gh/USER/REPO@main/bookmarklet.js
     // ============================================================
-    const SCRIPT_URL = 'https://cdn.jsdelivr.net/gh/moriyasujapan/17live-gift-export@main/bookmarklet.js?2026052102';
+    const SCRIPT_URL = 'https://raw.githubusercontent.com/moriyasujapan/17live-gift-export/refs/heads/main/bookmarklet.js';
 
     // Bookmarklet 本体: 外部スクリプトを fetch して eval するローダー
     const BOOKMARKLET = "javascript:(function(){fetch('" + SCRIPT_URL + "').then(function(r){return r.text();}).then(function(t){var s=document.createElement('script');s.textContent=t;document.documentElement.appendChild(s);s.remove();}).catch(function(e){alert('読み込み失敗: '+e.message);});})();";
